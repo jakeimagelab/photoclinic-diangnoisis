@@ -8,8 +8,8 @@ export const Q1_OPTIONS = [
 ] as const;
 
 export const Q2_OPTIONS = [
-  "피부과", "성형외과", "치과", "한의원", "안과",
-  "정신건강의학과", "산부인과", "정형외과", "가정의학과", "기타",
+  "피부과", "성형외과", "치과", "안과", "정형외과",
+  "신경외과", "마취통증의학과", "한방병원(한의원)", "검진내과", "기타",
 ] as const;
 
 export const Q4_OPTIONS = [
@@ -18,8 +18,8 @@ export const Q4_OPTIONS = [
 ] as const;
 
 export const Q5_OPTIONS = [
-  "의료진 프로필", "인테리어·공간 사진", "진료 연출 컷", "브랜드 영상",
-  "홈페이지 제작", "블로그·SNS 콘텐츠", "언론 홍보",
+  "의료진 프로필", "인테리어·분위기", "진료연출", "브랜드영상",
+  "홈페이지 제작", "언론홍보", "퍼스널이미지컨설팅",
 ] as const;
 
 export const Q6_OPTIONS = [
