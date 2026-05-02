@@ -33,7 +33,7 @@ export default function Home() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <h1 className="text-[28px] md:text-[58px] leading-[1.28] font-bold text-primary tracking-tight">
-            당신의 <span className="text-orange">병원</span>에 꼭 맞는<br />
+            원장님 <span className="text-orange">병원</span>에 꼭 맞는<br />
             콘텐츠를 찾아드립니다.
           </h1>
           <p className="mt-8 text-base md:text-lg text-secondary leading-[1.8] max-w-[600px]">
