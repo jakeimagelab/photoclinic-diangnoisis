@@ -1,0 +1,30 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background-color: #E5F0EE;
+  color: #1A1A1A;
+  font-family: Pretendard, system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  transition: background 0.8s ease;
+}
+
+body.phase-result {
+  background-color: #E5F0EE;
+}
+
+* { box-sizing: border-box; }
+
+::selection { background: rgba(230,98,42,0.30); color: #000; }
+body.phase-result ::selection { background: rgba(15,82,84,0.25); color: #000; }
+
+input::placeholder, textarea::placeholder { color: rgba(107,117,114,0.45); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(15,82,84,0.18); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
