@@ -133,7 +133,7 @@ export default function DiagnosisPage() {
                   defaultValue={answers.location ?? ""}
                   onChange={(e) => setAnswers({ location: e.target.value })}
                   onKeyDown={(e) => { if (e.key === "Enter") next(); }}
-                  placeholder="예) 서울 강남구 청담동"
+                  placeholder="예) 서울 강남구 압구정동"
                   className="w-full bg-transparent border-0 border-b-2 border-line-soft py-3.5 text-[20px] md:text-[28px] text-primary outline-none focus:border-orange transition-colors font-medium"
                 />
               </QuestionCard>
