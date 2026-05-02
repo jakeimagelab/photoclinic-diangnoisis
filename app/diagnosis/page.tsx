@@ -189,16 +189,16 @@ export default function DiagnosisPage() {
 
             {step === 8 && (
               <QuestionCard qNumber="Q8" title="마지막으로 연락처를 남겨주세요."
-                hint="24시간 이내 정연호 디렉터가 직접 연락드립니다.">
+                hint="24시간 이내 정연호디렉터가 직접 연락드립니다.">
                 <form onSubmit={handleSubmit(onSubmitContact)} className="space-y-8">
                   <Field label="병원명" error={errors.hospitalName?.message}>
-                    <input {...register("hospitalName")} placeholder="예) 르블랑치과" className="field" />
+                    <input {...register("hospitalName")} placeholder="예)포토클리닉" className="field" />
                   </Field>
                   <Field label="연락처" error={errors.phone?.message}>
                     <input {...register("phone")} placeholder="010-0000-0000" inputMode="numeric" className="field" />
                   </Field>
                   <Field label="이메일" error={errors.email?.message}>
-                    <input {...register("email")} placeholder="director@hospital.com" type="email" className="field" />
+                    <input {...register("email")} placeholder="photoclinic@gmail.com" type="email" className="field" />
                   </Field>
                   <button type="submit"
                     className="inline-flex items-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
