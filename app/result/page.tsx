@@ -18,6 +18,8 @@ export default function ResultPage() {
   const router = useRouter();
   const { answers, reset } = useDiagnosis();
   const [optin, setOptin] = useState(true);
+  const [mailStatus, setMailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [mailMessage, setMailMessage] = useState("");
 
   useEffect(() => {
     document.body.classList.add("phase-result");
@@ -34,6 +36,40 @@ export default function ResultPage() {
   }, [answers.hospitalName, router]);
 
   const rec = useMemo(() => recommend(answers), [answers]);
+
+  const sendReportEmail = async () => {
+    if (!answers.email) {
+      setMailStatus("error");
+      setMailMessage("이메일 주소가 없어 메일을 보낼 수 없습니다. 처음부터 다시 진행해 이메일을 입력해주세요.");
+      return;
+    }
+
+    setMailStatus("sending");
+    setMailMessage("");
+
+    try {
+      const response = await fetch("/api/send-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...answers, consultationOptin: optin }),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || result.ok === false) {
+        throw new Error(result.error || "메일 전송에 실패했습니다.");
+      }
+
+      setMailStatus("sent");
+      setMailMessage(
+        result.previewOnly
+          ? "메일 발송 환경변수가 없어 실제 발송은 생략되었습니다. Vercel에 RESEND_API_KEY와 RESEND_FROM을 설정하면 발송됩니다."
+          : `진단 요약 자료를 ${answers.email}로 전송했습니다.`
+      );
+    } catch (error: any) {
+      setMailStatus("error");
+      setMailMessage(error?.message || "메일 전송 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <main className="relative min-h-screen bg-base">
@@ -130,10 +166,10 @@ export default function ResultPage() {
         <div className="rounded-[14px] border border-green-line bg-elev p-9 md:p-12" style={{ marginTop: 72 }}>
           <div className="text-green text-xs tracking-wider2 mb-[22px] font-semibold">NEXT STEP</div>
           <h3 className="text-xl md:text-[28px] text-primary font-bold leading-[1.4] tracking-tight">
-            진단 결과를 바탕으로 <span className="text-green">촬영 방향 상담</span>을 이어가세요.
+            진단은 이미 <span className="text-green">상담 접수</span>입니다.
           </h3>
           <p className="mt-4 text-secondary leading-[1.8]">
-            상담 시에는 이 결과를 기준으로 필요한 촬영 항목, 촬영 동선, 홈페이지·플레이스 활용 방식을 함께 정리하는 흐름이 좋습니다.
+            남겨주신 병원 정보와 진단 답변은 포토클리닉 상담 DB에 저장됩니다. 별도로 홈페이지에서 다시 문의하지 않아도, 이 내용을 기준으로 촬영 범위와 방향을 상담할 수 있습니다.
           </p>
 
           <label className="mt-7 flex items-start gap-3 cursor-pointer select-none">
@@ -145,19 +181,20 @@ export default function ResultPage() {
               style={{ accentColor: "#0F5254" }}
             />
             <span className="text-sm text-secondary">
-              사전 컨설팅 자료를 {answers.email ? `이메일(${answers.email})로` : "상담 시"} 받아보겠습니다.
+              전체 진단 요약과 사전 컨설팅 자료를 {answers.email ? `이메일(${answers.email})로` : "이메일로"} 받아보겠습니다.
             </span>
           </label>
 
           <div className="mt-9 flex flex-wrap gap-4">
-            <Link
-              href="http://photoclinic.kr"
-              target="_blank"
-              className="inline-flex items-center gap-3 bg-green text-white px-8 py-[15px] font-semibold rounded transition-all hover:bg-green-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(15,82,84,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(15,82,84,0.5)]"
+            <button
+              type="button"
+              onClick={sendReportEmail}
+              disabled={mailStatus === "sending" || !optin || !answers.email}
+              className="inline-flex items-center gap-3 bg-green text-white px-8 py-[15px] font-semibold rounded transition-all hover:bg-green-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(15,82,84,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(15,82,84,0.5)] disabled:opacity-45 disabled:hover:translate-y-0"
             >
-              <span>포토클리닉 상담하기</span>
+              <span>{mailStatus === "sending" ? "메일 전송 중" : "진단 요약 메일 전송"}</span>
               <span>→</span>
-            </Link>
+            </button>
             <button
               onClick={() => {
                 reset();
@@ -168,6 +205,17 @@ export default function ResultPage() {
               처음부터 다시
             </button>
           </div>
+
+          {mailMessage && (
+            <p className={`mt-5 text-sm leading-[1.7] ${mailStatus === "error" ? "text-orange" : "text-green"}`}>
+              {mailMessage}
+            </p>
+          )}
+          {!answers.email && (
+            <p className="mt-5 text-sm text-muted leading-[1.7]">
+              이메일을 입력하지 않은 경우 메일 전송은 비활성화됩니다. 상담 DB에는 병원명과 연락처 기준으로 접수됩니다.
+            </p>
+          )}
         </div>
 
         <div className="h-24" />
