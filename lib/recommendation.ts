@@ -40,7 +40,7 @@ function decideType(a: Answers): DiagnosisType {
   if (a.stage === "개원예정" || a.stage === "신규오픈" || has(a.contents, "홈페이지 제작")) return "개원 브랜딩형";
   if (has(a.concerns, "의료진신뢰") || has(a.concerns, "전문성부족")) return "신뢰 보완형";
   if (has(a.concerns, "공간매력부족") || has(a.contents, "인테리어·분위기")) return "공간 이미지 강화형";
-  if (has(a.contents, "진료연출") || has(a.contents, "장비·시술 장면") || has(a.contents, "환자 모델 연출")) return "진료 장면 설계형";
+  if (has(a.contents, "진료연출")) return "진료 장면 설계형";
   return "콘텐츠 확장형";
 }
 
