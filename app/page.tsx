@@ -33,12 +33,12 @@ export default function Home() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <h1 className="text-[28px] md:text-[58px] leading-[1.28] font-bold text-primary tracking-tight">
-            원장님 <span className="text-orange">병원</span>에 꼭 맞는<br />
-            콘텐츠를 찾아드립니다.
+            우리 병원은 지금<br />
+            어떤 <span className="text-orange">사진</span>이 필요할까요?
           </h1>
           <p className="mt-8 text-base md:text-lg text-secondary leading-[1.8] max-w-[600px]">
-            3분 진단으로 우리 병원의 브랜딩 방향을 확인해보세요.<br />
-            포토클리닉이 함께해 온 <span className="text-green font-semibold">진심 컨텐츠</span>의 시작입니다.
+            개원, 리뉴얼, 홈페이지 제작, SNS 운영까지<br />
+            병원의 상황에 맞는 촬영 방향과 필요한 콘텐츠를 3분 안에 진단해드립니다.
           </p>
 
           <motion.div
@@ -52,7 +52,7 @@ export default function Home() {
               href="/diagnosis"
               className="group inline-flex items-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
             >
-              <span>진단 시작하기</span>
+              <span>우리 병원 사진 진단하기</span>
               <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
             </Link>
             <Link
@@ -65,7 +65,7 @@ export default function Home() {
           </motion.div>
 
           <p className="mt-24 text-[13px] text-muted font-normal">
-            ※ 포토클리닉이 함께한 병원의 데이터 기반
+            ※ 병원 촬영 경험을 바탕으로 필요한 사진 구성을 진단합니다.
           </p>
         </motion.div>
       </section>
