@@ -11,6 +11,8 @@ export async function POST(req: Request) {
         stage: body.stage ?? null,
         department: body.department ?? null,
         location: body.location ?? null,
+        concerns: body.concerns ?? [],
+        usages: body.usages ?? [],
         impressions: body.impressions ?? [],
         contents: body.contents ?? [],
         budget: body.budget ?? null,
@@ -39,11 +41,11 @@ export async function POST(req: Request) {
           body: JSON.stringify({
             from: resendFrom,
             to: body.email,
-            subject: "[포토클리닉] 진단 신청이 접수되었습니다",
+            subject: "[포토클리닉] 병원사진 진단 신청이 접수되었습니다",
             html: `<div style="font-family:Pretendard,sans-serif;color:#1A1A1A;line-height:1.7">
               <p>${body.hospitalName ?? ""} 원장님,</p>
-              <p>포토클리닉 진단 신청이 정상적으로 접수되었습니다.<br/>
-              24시간 이내 정연호 디렉터가 직접 연락드리겠습니다.</p>
+              <p>포토클리닉 병원사진 진단 신청이 정상적으로 접수되었습니다.<br/>
+              남겨주신 내용을 바탕으로 필요한 촬영 방향을 정리해 연락드리겠습니다.</p>
               <p style="color:#6B7572;font-size:13px">— 포토클리닉</p>
             </div>`,
           }),
