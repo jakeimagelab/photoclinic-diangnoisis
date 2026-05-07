@@ -1,20 +1,58 @@
 import { NextResponse } from "next/server";
 import { supabase, isSupabaseEnabled } from "@/lib/supabase";
 
+function normalizeArray(value: unknown) {
+  return Array.isArray(value) ? value : [];
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Supabase 저장 (환경변수 설정된 경우만)
+    // 1) Google Sheet 저장 (초기 DB 확보용)
+    const googleSheetWebhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+    if (googleSheetWebhookUrl) {
+      try {
+        const response = await fetch(googleSheetWebhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            submittedAt: new Date().toISOString(),
+            stage: body.stage ?? "",
+            department: body.department ?? "",
+            location: body.location ?? "",
+            concerns: normalizeArray(body.concerns),
+            usages: normalizeArray(body.usages),
+            impressions: normalizeArray(body.impressions),
+            contents: normalizeArray(body.contents),
+            budget: body.budget ?? "",
+            timeline: body.timeline ?? "",
+            hospitalName: body.hospitalName ?? "",
+            phone: body.phone ?? "",
+            email: body.email ?? "",
+            consultationOptin: body.consultationOptin ?? true,
+          }),
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("[google sheet webhook error]", text);
+        }
+      } catch (e) {
+        console.error("[google sheet webhook error]", e);
+      }
+    }
+
+    // 2) Supabase 저장 (나중에 관리자 페이지로 확장할 때 사용)
     if (isSupabaseEnabled && supabase) {
       const { error } = await supabase.from("diagnoses").insert({
         stage: body.stage ?? null,
         department: body.department ?? null,
         location: body.location ?? null,
-        concerns: body.concerns ?? [],
-        usages: body.usages ?? [],
-        impressions: body.impressions ?? [],
-        contents: body.contents ?? [],
+        concerns: normalizeArray(body.concerns),
+        usages: normalizeArray(body.usages),
+        impressions: normalizeArray(body.impressions),
+        contents: normalizeArray(body.contents),
         budget: body.budget ?? null,
         timeline: body.timeline ?? null,
         hospital_name: body.hospitalName,
@@ -23,14 +61,17 @@ export async function POST(req: Request) {
         consultation_optin: body.consultationOptin ?? true,
       });
       if (error) console.error("[supabase insert error]", error.message);
-    } else {
+    }
+
+    if (!googleSheetWebhookUrl && !isSupabaseEnabled) {
       console.log("[diagnosis submit - no DB]", JSON.stringify(body));
     }
 
-    // Resend 자동 회신 메일 (환경변수 설정된 경우만)
+    // 3) 대표님 알림 메일 (선택 환경변수 설정 시)
     const resendKey = process.env.RESEND_API_KEY;
     const resendFrom = process.env.RESEND_FROM;
-    if (resendKey && resendFrom && body.email) {
+    const ownerEmail = process.env.OWNER_NOTIFICATION_EMAIL;
+    if (resendKey && resendFrom && ownerEmail) {
       try {
         await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -40,18 +81,24 @@ export async function POST(req: Request) {
           },
           body: JSON.stringify({
             from: resendFrom,
-            to: body.email,
-            subject: "[포토클리닉] 병원사진 진단 신청이 접수되었습니다",
-            html: `<div style="font-family:Pretendard,sans-serif;color:#1A1A1A;line-height:1.7">
-              <p>${body.hospitalName ?? ""} 원장님,</p>
-              <p>포토클리닉 병원사진 진단 신청이 정상적으로 접수되었습니다.<br/>
-              남겨주신 내용을 바탕으로 필요한 촬영 방향을 정리해 연락드리겠습니다.</p>
-              <p style="color:#6B7572;font-size:13px">— 포토클리닉</p>
+            to: ownerEmail,
+            subject: `[포토클리닉 진단문의] ${body.hospitalName ?? "병원명 미입력"}`,
+            html: `<div style="font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#1A1A1A;line-height:1.7">
+              <h2>포토클리닉 진단문의가 접수되었습니다.</h2>
+              <p><strong>병원명:</strong> ${body.hospitalName ?? ""}</p>
+              <p><strong>연락처:</strong> ${body.phone ?? ""}</p>
+              <p><strong>이메일:</strong> ${body.email ?? ""}</p>
+              <p><strong>진료과:</strong> ${body.department ?? ""}</p>
+              <p><strong>지역:</strong> ${body.location ?? ""}</p>
+              <p><strong>현재 고민:</strong> ${normalizeArray(body.concerns).join(", ")}</p>
+              <p><strong>필요 촬영:</strong> ${normalizeArray(body.contents).join(", ")}</p>
+              <p><strong>예산:</strong> ${body.budget ?? ""}</p>
+              <p><strong>진행 시점:</strong> ${body.timeline ?? ""}</p>
             </div>`,
           }),
         });
       } catch (e) {
-        console.error("[resend error]", e);
+        console.error("[owner notification error]", e);
       }
     }
 
