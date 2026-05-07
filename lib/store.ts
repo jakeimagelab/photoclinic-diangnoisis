@@ -10,6 +10,8 @@ interface State {
 }
 
 const initial: Answers = {
+  concerns: [],
+  usages: [],
   impressions: [],
   contents: [],
   consultationOptin: true,
