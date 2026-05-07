@@ -28,7 +28,7 @@ const contactSchema = z.object({
   hospitalName: z.string().min(1, "병원명을 입력해주세요"),
   location: z.string().min(1, "병원 위치를 입력해주세요"),
   phone: z.string().regex(phoneRegex, "010-0000-0000 형식으로 입력해주세요"),
-  email: z.string().email("올바른 이메일을 입력해주세요").or(z.literal("")),
+  email: z.string().min(1, "이메일을 입력해주세요").email("올바른 이메일을 입력해주세요"),
 });
 
 type ContactForm = z.infer<typeof contactSchema>;
@@ -93,7 +93,7 @@ export default function DiagnosisPage() {
   }, [phoneVal, setValue]);
 
   const onSubmitContact = async (data: ContactForm) => {
-    const normalized = { ...data, email: data.email || undefined };
+    const normalized = { ...data, email: data.email };
     setAnswers(normalized);
     try {
       await fetch("/api/submit", {
@@ -263,8 +263,8 @@ export default function DiagnosisPage() {
             {step === 9 && (
               <QuestionCard
                 qNumber="Q9"
-                title="마지막으로 병원 정보를 남겨주세요."
-                hint="진단 결과를 바탕으로 필요한 촬영 방향을 정리해드립니다."
+                title="상담과 자료 전송을 위한 병원 정보를 남겨주세요."
+                hint="진단 완료 후 이 정보가 상담 DB에 저장되고, 이메일로 요약 자료를 받을 수 있습니다."
               >
                 <form onSubmit={handleSubmit(onSubmitContact)} className="space-y-8">
                   <Field label="병원명" error={errors.hospitalName?.message}>
@@ -276,7 +276,7 @@ export default function DiagnosisPage() {
                   <Field label="연락처" error={errors.phone?.message}>
                     <input {...register("phone")} placeholder="010-0000-0000" inputMode="numeric" className="field" />
                   </Field>
-                  <Field label="이메일 선택" error={errors.email?.message}>
+                  <Field label="이메일" error={errors.email?.message}>
                     <input {...register("email")} placeholder="photoclinic@gmail.com" type="email" className="field" />
                   </Field>
                   <button
@@ -284,7 +284,7 @@ export default function DiagnosisPage() {
                     className="inline-flex items-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
                     style={{ marginTop: 16 }}
                   >
-                    <span>촬영 처방전 받기</span>
+                    <span>진단 결과 확인하고 상담 접수하기</span>
                     <span>→</span>
                   </button>
                   <p className="text-[13px] text-muted">
