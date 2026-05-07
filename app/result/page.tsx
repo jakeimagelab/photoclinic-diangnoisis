@@ -107,12 +107,23 @@ export default function ResultPage() {
         </div>
 
         <div style={{ marginTop: 88 }}>
-          <div className="text-green text-xs tracking-wider2 mb-[22px] font-semibold">SIMILAR PROJECTS</div>
-          <h3 className="text-[22px] text-primary font-bold tracking-tight mb-6">유사한 결을 가진 병원의 사례</h3>
+          <div className="text-green text-xs tracking-wider2 mb-[22px] font-semibold">FEATURED PROJECTS</div>
+          <h3 className="text-[22px] text-primary font-bold tracking-tight mb-6">포토클리닉 대표 병원 사례</h3>
           <div className="grid md:grid-cols-3 gap-4">
             {CASES.map((c, i) => (
               <CaseStudyCard key={c.name} {...c} delay={0.1 + i * 0.08} />
             ))}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="https://photoclinic.kr/#6page"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 border-[1.5px] border-green text-green px-7 py-[14px] font-semibold rounded transition-all hover:bg-green hover:text-white hover:-translate-y-px"
+            >
+              <span>더 많은 포트폴리오 보기</span>
+              <span>→</span>
+            </Link>
           </div>
         </div>
 
