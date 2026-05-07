@@ -35,12 +35,9 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function DiagnosisPage() {
   const router = useRouter();
-  const { answers, setAnswers } = useDiagnosis();
+  const { answers, setAnswers, reset: resetDiagnosis } = useDiagnosis();
   const [step, setStep] = useState(1);
 
-  useEffect(() => {
-    document.body.classList.remove("phase-result");
-  }, []);
 
   const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -77,6 +74,7 @@ export default function DiagnosisPage() {
     formState: { errors },
     setValue,
     watch,
+    reset: resetForm,
   } = useForm<ContactForm>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
@@ -86,6 +84,23 @@ export default function DiagnosisPage() {
       email: answers.email ?? "",
     },
   });
+
+  useEffect(() => {
+    document.body.classList.remove("phase-result");
+
+    try {
+      window.localStorage.removeItem("photoclinic-diagnosis");
+    } catch {}
+
+    resetDiagnosis();
+    resetForm({
+      hospitalName: "",
+      location: "",
+      phone: "",
+      email: "",
+    });
+    setStep(1);
+  }, [resetDiagnosis, resetForm]);
 
   const phoneVal = watch("phone");
   useEffect(() => {
