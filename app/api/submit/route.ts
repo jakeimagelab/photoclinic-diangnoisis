@@ -31,6 +31,9 @@ export async function POST(req: Request) {
             phone: body.phone ?? "",
             email: body.email ?? "",
             consultationOptin: body.consultationOptin ?? true,
+            photoUploadConsent: body.photoUploadConsent ?? false,
+            uploadedPhotos: normalizeArray(body.uploadedPhotos),
+            photoMemo: body.photoMemo ?? "",
           }),
         });
 
@@ -59,6 +62,10 @@ export async function POST(req: Request) {
         phone: body.phone,
         email: body.email,
         consultation_optin: body.consultationOptin ?? true,
+        // 아래 컬럼은 Supabase 테이블에 추가한 뒤 사용하세요.
+        // photo_upload_consent: body.photoUploadConsent ?? false,
+        // uploaded_photos: normalizeArray(body.uploadedPhotos),
+        // photo_memo: body.photoMemo ?? null,
       });
       if (error) console.error("[supabase insert error]", error.message);
     }
@@ -94,6 +101,9 @@ export async function POST(req: Request) {
               <p><strong>필요 촬영:</strong> ${normalizeArray(body.contents).join(", ")}</p>
               <p><strong>예산:</strong> ${body.budget ?? ""}</p>
               <p><strong>진행 시점:</strong> ${body.timeline ?? ""}</p>
+              <p><strong>사진 업로드 동의:</strong> ${body.photoUploadConsent ? "동의" : "미동의/미업로드"}</p>
+              <p><strong>업로드 파일:</strong> ${normalizeArray(body.uploadedPhotos).map((p: any) => `${p.category || "사진"}: ${p.name || ""}`).join(" / ")}</p>
+              <p><strong>사진 관련 메모:</strong> ${body.photoMemo ?? ""}</p>
             </div>`,
           }),
         });
