@@ -15,6 +15,9 @@ const initial: Answers = {
   impressions: [],
   contents: [],
   consultationOptin: true,
+  uploadedPhotos: [],
+  photoUploadConsent: false,
+  photoMemo: "",
 };
 
 export const useDiagnosis = create<State>()(
