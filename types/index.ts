@@ -82,6 +82,13 @@ export type DiagnosisType =
   | "진료 장면 설계형"
   | "콘텐츠 확장형";
 
+export type UploadedPhoto = {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+};
+
 export interface Answers {
   stage?: Stage;
   concerns: Concern[];
@@ -97,4 +104,8 @@ export interface Answers {
   phone?: string;
   email?: string;
   consultationOptin: boolean;
+
+  uploadedPhotos?: UploadedPhoto[];
+  photoUploadConsent?: boolean;
+  photoMemo?: string;
 }
