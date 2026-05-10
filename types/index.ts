@@ -74,12 +74,12 @@ export type PhotoCategory =
   | "병원 공간사진"
   | "진료·상담 장면사진";
 
-export interface UploadedPhoto {
-  category: PhotoCategory;
+export type UploadedPhoto = {
+  category: PhotoCategory | string;
   name: string;
   size: number;
   type: string;
-}
+};
 
 export type Package =
   | "Premium"
