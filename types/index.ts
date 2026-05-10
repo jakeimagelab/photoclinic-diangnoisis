@@ -69,6 +69,18 @@ export type Budget =
 
 export type Timeline = "2주내" | "1개월내" | "2-3개월내" | "미정";
 
+export type PhotoCategory =
+  | "원장님 프로필사진"
+  | "병원 공간사진"
+  | "진료·상담 장면사진";
+
+export interface UploadedPhoto {
+  category: PhotoCategory;
+  name: string;
+  size: number;
+  type: string;
+}
+
 export type Package =
   | "Premium"
   | "Premium Plus"
@@ -82,13 +94,6 @@ export type DiagnosisType =
   | "진료 장면 설계형"
   | "콘텐츠 확장형";
 
-export type UploadedPhoto = {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-};
-
 export interface Answers {
   stage?: Stage;
   concerns: Concern[];
@@ -99,6 +104,7 @@ export interface Answers {
   contents: Content[];
   budget?: Budget;
   timeline?: Timeline;
+
   hospitalName?: string;
   contactRole?: string;
   phone?: string;
