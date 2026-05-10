@@ -23,17 +23,35 @@ import {
   TOTAL_STEPS,
 } from "@/lib/questions";
 import { formatPhone, phoneRegex } from "@/lib/utils";
-import type { Concern, Content, Department, Impression, Usage } from "@/types";
+import type {
+  Concern,
+  Content,
+  Department,
+  Impression,
+  Usage,
+  ContactRole,
+} from "@/types";
 
 const contactSchema = z.object({
   hospitalName: z.string().min(1, "병원명을 입력해주세요"),
   contactRole: z.string().min(1, "문의자 유형을 선택해주세요"),
   location: z.string().min(1, "병원 위치를 입력해주세요"),
   phone: z.string().regex(phoneRegex, "010-0000-0000 형식으로 입력해주세요"),
-  email: z.string().min(1, "이메일을 입력해주세요").email("올바른 이메일을 입력해주세요"),
+  email: z
+    .string()
+    .min(1, "이메일을 입력해주세요")
+    .email("올바른 이메일을 입력해주세요"),
 });
 
 type ContactForm = z.infer<typeof contactSchema>;
+
+const CONTACT_ROLE_OPTIONS: ContactRole[] = [
+  "원장님",
+  "실장님",
+  "마케팅 담당자",
+  "대행사/협력업체",
+  "기타",
+];
 
 export default function DiagnosisPage() {
   const router = useRouter();
@@ -115,6 +133,7 @@ export default function DiagnosisPage() {
   }, [resetDiagnosis, resetForm]);
 
   const phoneVal = watch("phone");
+  const selectedContactRole = watch("contactRole");
 
   useEffect(() => {
     if (phoneVal !== undefined) {
@@ -225,7 +244,9 @@ export default function DiagnosisPage() {
                       index={i}
                       label={opt}
                       selected={answers.department === opt}
-                      onClick={() => pickAndAdvance({ department: opt as Department })}
+                      onClick={() =>
+                        pickAndAdvance({ department: opt as Department })
+                      }
                     />
                   ))}
                 </div>
@@ -266,7 +287,10 @@ export default function DiagnosisPage() {
                       index={i}
                       label={opt}
                       multi
-                      selected={answers.impressions?.includes(opt as Impression) ?? false}
+                      selected={
+                        answers.impressions?.includes(opt as Impression) ??
+                        false
+                      }
                       onClick={() => toggleImpression(opt as Impression)}
                     />
                   ))}
@@ -296,7 +320,10 @@ export default function DiagnosisPage() {
             )}
 
             {step === 7 && (
-              <QuestionCard qNumber="Q7" title="예산 범위는 어느 정도 생각하고 계신가요?">
+              <QuestionCard
+                qNumber="Q7"
+                title="예산 범위는 어느 정도 생각하고 계신가요?"
+              >
                 <div className="grid gap-3">
                   {Q7_OPTIONS.map((opt, i) => (
                     <OptionButton
@@ -343,14 +370,34 @@ export default function DiagnosisPage() {
                   </Field>
 
                   <Field label="문의자 유형" error={errors.contactRole?.message}>
-                    <select {...register("contactRole")} className="field select-field">
-                      <option value="">상담을 진행하실 분의 유형을 선택해주세요.</option>
-                      <option value="원장님">원장님</option>
-                      <option value="실장님">실장님</option>
-                      <option value="마케팅 담당자">마케팅 담당자</option>
-                      <option value="대행사/협력업체">대행사/협력업체</option>
-                      <option value="기타">기타</option>
-                    </select>
+                    <input type="hidden" {...register("contactRole")} />
+
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {CONTACT_ROLE_OPTIONS.map((role) => {
+                        const selected = selectedContactRole === role;
+
+                        return (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => {
+                              setValue("contactRole", role, {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                                shouldTouch: true,
+                              });
+                            }}
+                            className={`min-h-[58px] rounded-2xl border px-5 py-4 text-left text-[15px] font-semibold transition-all ${
+                              selected
+                                ? "border-orange bg-orange text-white shadow-[0_8px_24px_-10px_rgba(230,98,42,0.65)]"
+                                : "border-[#155855]/15 bg-white/70 text-[#155855] hover:border-orange/50 hover:bg-white"
+                            }`}
+                          >
+                            {role}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </Field>
 
                   <Field label="병원 위치" error={errors.location?.message}>
@@ -455,16 +502,6 @@ export default function DiagnosisPage() {
 
         .field::placeholder {
           color: rgba(107, 117, 114, 0.45);
-        }
-
-        .select-field {
-          appearance: auto;
-          cursor: pointer;
-          color: #1a1a1a;
-        }
-
-        .select-field:invalid {
-          color: rgba(107, 117, 114, 0.55);
         }
       `}</style>
     </main>
