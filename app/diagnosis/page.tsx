@@ -92,7 +92,6 @@ export default function DiagnosisPage() {
     answers.photoUploadConsent ?? false
   );
   const [photoMemo, setPhotoMemo] = useState(answers.photoMemo ?? "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -122,7 +121,9 @@ export default function DiagnosisPage() {
     if (cur.includes(v)) {
       setAnswers({ impressions: cur.filter((x) => x !== v) });
     } else {
-      setAnswers({ impressions: cur.length >= 2 ? [cur[1], v] : [...cur, v] });
+      setAnswers({
+        impressions: cur.length >= 2 ? [cur[1], v] : [...cur, v],
+      });
     }
   };
 
@@ -184,7 +185,14 @@ export default function DiagnosisPage() {
   }, [phoneVal, setValue]);
 
   const onSubmitContact = (data: ContactForm) => {
-    setAnswers({ ...data, email: data.email });
+    setAnswers({
+      hospitalName: data.hospitalName,
+      contactRole: data.contactRole,
+      location: data.location,
+      phone: data.phone,
+      email: data.email,
+    });
+
     next();
   };
 
@@ -211,7 +219,7 @@ export default function DiagnosisPage() {
     );
   };
 
-  const submitFinalDiagnosis = async () => {
+  const submitFinalDiagnosis = () => {
     if (uploadedPhotos.length > 0 && !photoUploadConsent) {
       alert("사진을 업로드한 경우 사진 활용 동의가 필요합니다.");
       return;
@@ -219,43 +227,21 @@ export default function DiagnosisPage() {
 
     const finalAnswers = {
       ...answers,
+
+      hospitalName: watch("hospitalName"),
+      contactRole: watch("contactRole"),
+      location: watch("location"),
+      phone: watch("phone"),
+      email: watch("email"),
+
       uploadedPhotos,
       photoUploadConsent,
       photoMemo,
     };
 
-    setAnswers({
-      uploadedPhotos,
-      photoUploadConsent,
-      photoMemo,
-    });
+    setAnswers(finalAnswers);
 
-    try {
-      setIsSubmitting(true);
-
-      const response = await fetch("/api/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(finalAnswers),
-      });
-
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok || result.ok === false) {
-        alert(
-          `상담 DB 저장에 실패했습니다.\n\n${
-            result.error || "원인을 확인할 수 없습니다."
-          }`
-        );
-        return;
-      }
-
-      router.push("/result");
-    } catch (error: any) {
-      alert(`상담 DB 저장 중 오류가 발생했습니다.\n\n${error?.message || ""}`);
-    } finally {
-      setIsSubmitting(false);
-    }
+    router.push("/result");
   };
 
   useEffect(() => {
@@ -447,7 +433,7 @@ export default function DiagnosisPage() {
               <QuestionCard
                 qNumber="Q9"
                 title="상담과 자료 전송을 위한 병원 정보를 남겨주세요."
-                hint="진단 완료 후 이 정보가 상담 DB에 저장되고, 이메일로 요약 자료를 받을 수 있습니다."
+                hint="진단 완료 후 이 정보가 상담에 활용됩니다."
               >
                 <form
                   onSubmit={handleSubmit(onSubmitContact)}
@@ -545,7 +531,7 @@ export default function DiagnosisPage() {
               <QuestionCard
                 qNumber="Q10"
                 title="현재 사용 중인 병원사진을 업로드해주세요."
-                hint="사진 업로드는 선택사항입니다. 업로드해주시면 병원이미지 진단과 상담 리포트에 더 구체적으로 반영할 수 있습니다."
+                hint="사진 업로드는 선택사항입니다. 업로드해주시면 병원이미지 진단에 더 구체적으로 반영할 수 있습니다."
               >
                 <div className="space-y-7">
                   <div className="rounded-[28px] border border-[#155855]/10 bg-white/70 p-6">
@@ -670,15 +656,10 @@ export default function DiagnosisPage() {
                     <button
                       type="button"
                       onClick={submitFinalDiagnosis}
-                      disabled={isSubmitting}
-                      className="inline-flex items-center justify-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px disabled:opacity-50 shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
+                      className="inline-flex items-center justify-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
                     >
-                      <span>
-                        {isSubmitting
-                          ? "저장 중..."
-                          : "진단 결과 확인하고 상담 접수하기"}
-                      </span>
-                      {!isSubmitting && <span>→</span>}
+                      <span>진단 결과 확인하기</span>
+                      <span>→</span>
                     </button>
 
                     <button
