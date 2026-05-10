@@ -44,6 +44,13 @@ const contactSchema = z.object({
 
 type ContactForm = z.infer<typeof contactSchema>;
 
+type UploadedPhotoMeta = {
+  category: string;
+  name: string;
+  size: number;
+  type: string;
+};
+
 const CONTACT_ROLE_OPTIONS = [
   "원장님",
   "실장님",
@@ -52,10 +59,40 @@ const CONTACT_ROLE_OPTIONS = [
   "기타",
 ] as const;
 
+const PHOTO_UPLOAD_OPTIONS = [
+  {
+    category: "원장님 프로필사진",
+    title: "원장님 프로필사진",
+    desc: "현재 홈페이지, 네이버 플레이스, 소개 페이지에서 사용 중인 원장님 사진을 올려주세요.",
+    accept: "image/*",
+  },
+  {
+    category: "병원 공간사진",
+    title: "병원 공간사진",
+    desc: "로비, 상담실, 진료실, 시술실 등 병원의 분위기가 보이는 사진을 올려주세요.",
+    accept: "image/*",
+  },
+  {
+    category: "진료·상담 장면사진",
+    title: "진료·상담 장면사진",
+    desc: "상담, 설명, 진료, 시술 연출 등 환자에게 신뢰를 줄 수 있는 장면 사진을 올려주세요.",
+    accept: "image/*",
+  },
+] as const;
+
 export default function DiagnosisPage() {
   const router = useRouter();
   const { answers, setAnswers, reset: resetDiagnosis } = useDiagnosis();
+
   const [step, setStep] = useState(1);
+  const [uploadedPhotos, setUploadedPhotos] = useState<UploadedPhotoMeta[]>(
+    answers.uploadedPhotos ?? []
+  );
+  const [photoUploadConsent, setPhotoUploadConsent] = useState(
+    answers.photoUploadConsent ?? false
+  );
+  const [photoMemo, setPhotoMemo] = useState(answers.photoMemo ?? "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -81,6 +118,7 @@ export default function DiagnosisPage() {
 
   const toggleImpression = (v: Impression) => {
     const cur = answers.impressions ?? [];
+
     if (cur.includes(v)) {
       setAnswers({ impressions: cur.filter((x) => x !== v) });
     } else {
@@ -121,6 +159,7 @@ export default function DiagnosisPage() {
     } catch {}
 
     resetDiagnosis();
+
     resetForm({
       hospitalName: "",
       contactRole: "",
@@ -128,6 +167,10 @@ export default function DiagnosisPage() {
       phone: "",
       email: "",
     });
+
+    setUploadedPhotos([]);
+    setPhotoUploadConsent(false);
+    setPhotoMemo("");
     setStep(1);
   }, [resetDiagnosis, resetForm]);
 
@@ -140,13 +183,56 @@ export default function DiagnosisPage() {
     }
   }, [phoneVal, setValue]);
 
-  const onSubmitContact = async (data: ContactForm) => {
-    const normalized = { ...data, email: data.email };
-    const finalAnswers = { ...answers, ...normalized };
+  const onSubmitContact = (data: ContactForm) => {
+    setAnswers({ ...data, email: data.email });
+    next();
+  };
 
-    setAnswers(normalized);
+  const handlePhotoChange = (category: string, files: FileList | null) => {
+    const selectedFiles = Array.from(files ?? []);
+
+    setUploadedPhotos((prev) => {
+      const filtered = prev.filter((photo) => photo.category !== category);
+
+      const nextPhotos = selectedFiles.map((file) => ({
+        category,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      }));
+
+      return [...filtered, ...nextPhotos];
+    });
+  };
+
+  const removePhotosByCategory = (category: string) => {
+    setUploadedPhotos((prev) =>
+      prev.filter((photo) => photo.category !== category)
+    );
+  };
+
+  const submitFinalDiagnosis = async () => {
+    if (uploadedPhotos.length > 0 && !photoUploadConsent) {
+      alert("사진을 업로드한 경우 사진 활용 동의가 필요합니다.");
+      return;
+    }
+
+    const finalAnswers = {
+      ...answers,
+      uploadedPhotos,
+      photoUploadConsent,
+      photoMemo,
+    };
+
+    setAnswers({
+      uploadedPhotos,
+      photoUploadConsent,
+      photoMemo,
+    });
 
     try {
+      setIsSubmitting(true);
+
       const response = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -167,6 +253,8 @@ export default function DiagnosisPage() {
       router.push("/result");
     } catch (error: any) {
       alert(`상담 DB 저장 중 오류가 발생했습니다.\n\n${error?.message || ""}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -435,7 +523,7 @@ export default function DiagnosisPage() {
                     className="inline-flex items-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
                     style={{ marginTop: 16 }}
                   >
-                    <span>진단 결과 확인하고 상담 접수하기</span>
+                    <span>사진 업로드 단계로 이동하기</span>
                     <span>→</span>
                   </button>
 
@@ -450,6 +538,158 @@ export default function DiagnosisPage() {
                     </button>
                   </p>
                 </form>
+              </QuestionCard>
+            )}
+
+            {step === 10 && (
+              <QuestionCard
+                qNumber="Q10"
+                title="현재 사용 중인 병원사진을 업로드해주세요."
+                hint="사진 업로드는 선택사항입니다. 업로드해주시면 병원이미지 진단과 상담 리포트에 더 구체적으로 반영할 수 있습니다."
+              >
+                <div className="space-y-7">
+                  <div className="rounded-[28px] border border-[#155855]/10 bg-white/70 p-6">
+                    <p className="text-[15px] leading-7 text-muted">
+                      원장님 프로필사진, 병원 공간사진, 진료·상담 장면사진을
+                      올려주시면 포토클리닉이 사진의 장점과 보완점을 더
+                      구체적으로 확인할 수 있습니다.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4">
+                    {PHOTO_UPLOAD_OPTIONS.map((item) => {
+                      const filesForCategory = uploadedPhotos.filter(
+                        (photo) => photo.category === item.category
+                      );
+
+                      return (
+                        <div
+                          key={item.category}
+                          className="rounded-[28px] border border-[#155855]/12 bg-white/80 p-6 shadow-[0_14px_38px_-30px_rgba(15,82,84,0.55)]"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <h3 className="text-lg font-bold text-primary">
+                                {item.title}
+                              </h3>
+                              <p className="mt-2 text-sm leading-6 text-muted">
+                                {item.desc}
+                              </p>
+                            </div>
+
+                            <label className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-orange px-5 py-3 text-sm font-semibold text-orange transition hover:bg-orange hover:text-white">
+                              파일 선택
+                              <input
+                                type="file"
+                                accept={item.accept}
+                                multiple
+                                className="hidden"
+                                onChange={(event) =>
+                                  handlePhotoChange(
+                                    item.category,
+                                    event.target.files
+                                  )
+                                }
+                              />
+                            </label>
+                          </div>
+
+                          {filesForCategory.length > 0 && (
+                            <div className="mt-5 rounded-2xl bg-[#F7FBFA] p-4">
+                              <div className="mb-3 flex items-center justify-between">
+                                <p className="text-xs font-semibold tracking-wider2 text-orange">
+                                  선택된 파일
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removePhotosByCategory(item.category)
+                                  }
+                                  className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-primary"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+
+                              <ul className="space-y-2">
+                                {filesForCategory.map((photo, index) => (
+                                  <li
+                                    key={`${photo.category}-${photo.name}-${index}`}
+                                    className="text-sm text-[#155855]"
+                                  >
+                                    {photo.name}{" "}
+                                    <span className="text-muted">
+                                      ({Math.round(photo.size / 1024)}KB)
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="rounded-[28px] border border-[#155855]/12 bg-white/80 p-6">
+                    <label className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={photoUploadConsent}
+                        onChange={(event) =>
+                          setPhotoUploadConsent(event.target.checked)
+                        }
+                        className="mt-1 h-4 w-4 accent-[#E85D2C]"
+                      />
+                      <span className="text-sm leading-6 text-muted">
+                        업로드한 사진은 병원이미지 진단 및 상담 리포트 작성
+                        목적으로만 사용됩니다. 사진에 포함된 인물의 업로드 및
+                        상담 활용에 대한 동의를 받았음을 확인합니다.
+                      </span>
+                    </label>
+
+                    <p className="mt-4 text-xs leading-5 text-muted">
+                      환자 얼굴이 포함된 사진은 업로드 전 모자이크 처리하거나,
+                      초상권 및 개인정보 활용 동의가 완료된 사진만 업로드해주세요.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs tracking-wider2 text-orange font-semibold">
+                      사진 관련 추가 요청
+                    </label>
+                    <textarea
+                      value={photoMemo}
+                      onChange={(event) => setPhotoMemo(event.target.value)}
+                      placeholder="예) 현재 홈페이지에 사용 중인 사진입니다. 원장님 인상이 더 부드러워 보였으면 좋겠습니다."
+                      className="mt-3 min-h-[120px] w-full resize-none rounded-[24px] border border-[#155855]/12 bg-white/80 p-5 text-[15px] leading-7 text-[#1A1A1A] outline-none transition focus:border-orange"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={submitFinalDiagnosis}
+                      disabled={isSubmitting}
+                      className="inline-flex items-center justify-center gap-3 bg-orange text-white px-[38px] py-[18px] text-base font-semibold rounded transition-all hover:bg-orange-2 hover:-translate-y-px disabled:opacity-50 shadow-[0_4px_18px_-4px_rgba(230,98,42,0.35)] hover:shadow-[0_8px_28px_-4px_rgba(230,98,42,0.5)]"
+                    >
+                      <span>
+                        {isSubmitting
+                          ? "저장 중..."
+                          : "진단 결과 확인하고 상담 접수하기"}
+                      </span>
+                      {!isSubmitting && <span>→</span>}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={prev}
+                      className="inline-flex items-center justify-center px-6 py-[18px] text-sm font-semibold text-muted underline underline-offset-2 hover:text-primary"
+                    >
+                      ← 이전 단계로
+                    </button>
+                  </div>
+                </div>
               </QuestionCard>
             )}
           </div>
