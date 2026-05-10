@@ -57,14 +57,12 @@ export type Content =
 export type Budget = "100이하" | "100-200" | "200-300" | "300-500" | "500이상" | "추천받기";
 export type Timeline = "2주내" | "1개월내" | "2-3개월내" | "미정";
 
-export type PhotoCategory = "원장님 프로필사진" | "병원 공간사진" | "진료·상담 장면사진";
-
-export interface UploadedPhoto {
-  category: PhotoCategory;
-  name: string;
-  size: number;
-  type: string;
-}
+export type ContactRole =
+  | "원장님"
+  | "실장님"
+  | "마케팅 담당자"
+  | "대행사/협력업체"
+  | "기타";
 
 export type Package = "Premium" | "Premium Plus" | "Homepage" | "Branding Content";
 
@@ -86,10 +84,8 @@ export interface Answers {
   budget?: Budget;
   timeline?: Timeline;
   hospitalName?: string;
+  contactRole?: ContactRole;
   phone?: string;
   email?: string;
   consultationOptin: boolean;
-  photoUploadConsent?: boolean;
-  uploadedPhotos?: UploadedPhoto[];
-  photoMemo?: string;
 }
