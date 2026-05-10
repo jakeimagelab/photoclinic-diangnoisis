@@ -29,7 +29,6 @@ import type {
   Department,
   Impression,
   Usage,
-  ContactRole,
 } from "@/types";
 
 const contactSchema = z.object({
@@ -45,13 +44,13 @@ const contactSchema = z.object({
 
 type ContactForm = z.infer<typeof contactSchema>;
 
-const CONTACT_ROLE_OPTIONS: ContactRole[] = [
+const CONTACT_ROLE_OPTIONS = [
   "원장님",
   "실장님",
   "마케팅 담당자",
   "대행사/협력업체",
   "기타",
-];
+] as const;
 
 export default function DiagnosisPage() {
   const router = useRouter();
@@ -311,7 +310,9 @@ export default function DiagnosisPage() {
                       index={i}
                       label={opt}
                       multi
-                      selected={answers.contents?.includes(opt as Content) ?? false}
+                      selected={
+                        answers.contents?.includes(opt as Content) ?? false
+                      }
                       onClick={() => toggleContent(opt as Content)}
                     />
                   ))}
@@ -360,7 +361,10 @@ export default function DiagnosisPage() {
                 title="상담과 자료 전송을 위한 병원 정보를 남겨주세요."
                 hint="진단 완료 후 이 정보가 상담 DB에 저장되고, 이메일로 요약 자료를 받을 수 있습니다."
               >
-                <form onSubmit={handleSubmit(onSubmitContact)} className="space-y-8">
+                <form
+                  onSubmit={handleSubmit(onSubmitContact)}
+                  className="space-y-8"
+                >
                   <Field label="병원명" error={errors.hospitalName?.message}>
                     <input
                       {...register("hospitalName")}
