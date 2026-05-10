@@ -1,4 +1,4 @@
-export const TOTAL_STEPS = 10;
+export const TOTAL_STEPS = 9;
 
 export const Q1_OPTIONS = [
   { value: "개원예정", label: "곧 개원 예정", sub: "개원 전 홈페이지·플레이스·홍보 이미지가 필요해요" },
