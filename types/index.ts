@@ -1,4 +1,9 @@
-export type Stage = "개원예정" | "신규오픈" | "리뉴얼" | "정기관리" | "촬영만";
+export type Stage =
+  | "개원예정"
+  | "신규오픈"
+  | "리뉴얼"
+  | "정기관리"
+  | "촬영만";
 
 export type Concern =
   | "전문성부족"
@@ -54,17 +59,21 @@ export type Content =
   | "언론홍보"
   | "기타요청";
 
-export type Budget = "100이하" | "100-200" | "200-300" | "300-500" | "500이상" | "추천받기";
+export type Budget =
+  | "100이하"
+  | "100-200"
+  | "200-300"
+  | "300-500"
+  | "500이상"
+  | "추천받기";
+
 export type Timeline = "2주내" | "1개월내" | "2-3개월내" | "미정";
 
-export type ContactRole =
-  | "원장님"
-  | "실장님"
-  | "마케팅 담당자"
-  | "대행사/협력업체"
-  | "기타";
-
-export type Package = "Premium" | "Premium Plus" | "Homepage" | "Branding Content";
+export type Package =
+  | "Premium"
+  | "Premium Plus"
+  | "Homepage"
+  | "Branding Content";
 
 export type DiagnosisType =
   | "개원 브랜딩형"
@@ -84,7 +93,7 @@ export interface Answers {
   budget?: Budget;
   timeline?: Timeline;
   hospitalName?: string;
-  contactRole?: ContactRole;
+  contactRole?: string;
   phone?: string;
   email?: string;
   consultationOptin: boolean;
