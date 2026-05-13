@@ -65,18 +65,28 @@ const PHOTO_UPLOAD_OPTIONS = [
     title: "원장님 프로필사진",
     desc: "현재 홈페이지, 네이버 플레이스, 소개 페이지에서 사용 중인 원장님 사진을 올려주세요.",
     accept: "image/*",
+    accent: false,
+  },
+  {
+    category: "진료연출장면",
+    title: "진료연출장면",
+    desc: "진료, 상담, 설명, 시술 연출 등 환자에게 신뢰를 줄 수 있는 장면 사진을 올려주세요.",
+    accept: "image/*",
+    accent: false,
   },
   {
     category: "병원 공간사진",
     title: "병원 공간사진",
     desc: "로비, 상담실, 진료실, 시술실 등 병원의 분위기가 보이는 사진을 올려주세요.",
     accept: "image/*",
+    accent: false,
   },
   {
-    category: "진료·상담 장면사진",
-    title: "진료·상담 장면사진",
-    desc: "상담, 설명, 진료, 시술 연출 등 환자에게 신뢰를 줄 수 있는 장면 사진을 올려주세요.",
+    category: "원하는 이미지",
+    title: "원하는 이미지",
+    desc: "원하는 분위기, 벤치마킹 이미지, 참고하고 싶은 사진이 있다면 업로드해주세요.",
     accept: "image/*",
+    accent: true,
   },
 ] as const;
 
@@ -92,6 +102,7 @@ export default function DiagnosisPage() {
     answers.photoUploadConsent ?? false
   );
   const [photoMemo, setPhotoMemo] = useState(answers.photoMemo ?? "");
+  const [referenceUrl, setReferenceUrl] = useState(answers.referenceUrl ?? "");
 
   const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -172,6 +183,7 @@ export default function DiagnosisPage() {
     setUploadedPhotos([]);
     setPhotoUploadConsent(false);
     setPhotoMemo("");
+    setReferenceUrl("");
     setStep(1);
   }, [resetDiagnosis, resetForm]);
 
@@ -236,6 +248,7 @@ export default function DiagnosisPage() {
 
       uploadedPhotos,
       photoUploadConsent,
+      referenceUrl,
       photoMemo,
     };
 
@@ -536,9 +549,10 @@ export default function DiagnosisPage() {
                 <div className="space-y-7">
                   <div className="rounded-[28px] border border-[#155855]/10 bg-white/70 p-6">
                     <p className="text-[15px] leading-7 text-muted">
-                      원장님 프로필사진, 병원 공간사진, 진료·상담 장면사진을
+                      원장님 프로필사진, 진료연출장면, 병원 공간사진을
                       올려주시면 포토클리닉이 사진의 장점과 보완점을 더
-                      구체적으로 확인할 수 있습니다.
+                      구체적으로 확인할 수 있습니다. 원하는 이미지가 있다면
+                      함께 업로드해주세요.
                     </p>
                   </div>
 
@@ -551,7 +565,11 @@ export default function DiagnosisPage() {
                       return (
                         <div
                           key={item.category}
-                          className="rounded-[28px] border border-[#155855]/12 bg-white/80 p-6 shadow-[0_14px_38px_-30px_rgba(15,82,84,0.55)]"
+                          className={`rounded-[28px] border bg-white/80 p-6 shadow-[0_14px_38px_-30px_rgba(15,82,84,0.55)] ${
+                            item.accent
+                              ? "border-orange"
+                              : "border-[#155855]/12"
+                          }`}
                         >
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
@@ -637,6 +655,22 @@ export default function DiagnosisPage() {
                     <p className="mt-4 text-xs leading-5 text-muted">
                       환자 얼굴이 포함된 사진은 업로드 전 모자이크 처리하거나,
                       초상권 및 개인정보 활용 동의가 완료된 사진만 업로드해주세요.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs tracking-wider2 text-orange font-semibold">
+                      참고 URL
+                    </label>
+                    <input
+                      type="url"
+                      value={referenceUrl}
+                      onChange={(event) => setReferenceUrl(event.target.value)}
+                      placeholder="예) https://photoclinic.kr 또는 참고하고 싶은 병원/브랜드 페이지 URL"
+                      className="mt-3 w-full rounded-[24px] border border-[#155855]/12 bg-white/80 p-5 text-[15px] text-[#1A1A1A] outline-none transition focus:border-orange"
+                    />
+                    <p className="mt-2 text-xs leading-5 text-muted">
+                      원하는 분위기나 벤치마킹하고 싶은 이미지가 있는 페이지 주소를 입력해주세요.
                     </p>
                   </div>
 
