@@ -71,8 +71,9 @@ export type Timeline = "2주내" | "1개월내" | "2-3개월내" | "미정";
 
 export type PhotoCategory =
   | "원장님 프로필사진"
+  | "진료연출장면"
   | "병원 공간사진"
-  | "진료·상담 장면사진";
+  | "원하는 이미지";
 
 export type UploadedPhoto = {
   category: PhotoCategory | string;
@@ -114,4 +115,5 @@ export interface Answers {
   uploadedPhotos?: UploadedPhoto[];
   photoUploadConsent?: boolean;
   photoMemo?: string;
+  referenceUrl?: string;
 }
